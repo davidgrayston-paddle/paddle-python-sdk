@@ -27,6 +27,8 @@ setup(
         "dev": [
             "pytest>=7.4.4,<8.4.0",
             "pytest-cov~=4.1.0",
+            "pytest-httpx",
+            "pytest-asyncio",
             "requests-mock~=1.11.0",
             "setuptools>=69.0.3",
             "pre-commit>=3.8.0",
