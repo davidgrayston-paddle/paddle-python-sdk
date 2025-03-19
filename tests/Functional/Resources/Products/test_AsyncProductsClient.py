@@ -10,7 +10,7 @@ from paddle_billing.Resources.Shared.Operations import Pager
 from paddle_billing import Environment
 
 from paddle_billing.Resources.Products.Operations import CreateProduct, ListProducts
-from paddle_billing.Resources.Products.AsyncProductsClient import AsyncProductsClient
+from paddle_billing.AsyncClient import AsyncClient
 
 from tests.Utils.ReadsFixture import ReadsFixtures
 
@@ -27,13 +27,13 @@ class TestAsyncProductsClient:
         expected_url = f"{base_url}/products"
         httpx_mock.add_response(method="POST", url=expected_url, status_code=201, text=expected_response_body)
 
-        client = AsyncProductsClient(
+        client = AsyncClient(
             api_key=getenv("PADDLE_API_SECRET_KEY"),
             version=1,
             env=Environment.SANDBOX,
         )
 
-        product = await client.create(
+        product = await client.products.create(
             CreateProduct(
                 name="ChatApp Full",
                 tax_category=TaxCategory.Standard,
@@ -82,14 +82,14 @@ class TestAsyncProductsClient:
         expected_url = f"{base_url}/products"
         httpx_mock.add_response(method="POST", url=expected_url, status_code=400, text=expected_response_body)
 
-        client = AsyncProductsClient(
+        client = AsyncClient(
             api_key=getenv("PADDLE_API_SECRET_KEY"),
             version=1,
             env=Environment.SANDBOX,
         )
 
         with raises(ApiError) as exception_info:
-            await client.create(
+            await client.products.create(
                 CreateProduct(
                     name="ChatApp Full",
                     tax_category=TaxCategory.Standard,
@@ -116,13 +116,13 @@ class TestAsyncProductsClient:
 
         httpx_mock.add_response(method="GET", url=expected_url, status_code=200, text=expected_response_body)
 
-        client = AsyncProductsClient(
+        client = AsyncClient(
             api_key=getenv("PADDLE_API_SECRET_KEY"),
             version=1,
             env=Environment.SANDBOX,
         )
 
-        products = await client.list(ListProducts(Pager()))
+        products = await client.products.list(ListProducts(Pager()))
 
         product = products.items[0]
 

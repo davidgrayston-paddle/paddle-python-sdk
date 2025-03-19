@@ -1,10 +1,3 @@
-import httpx
-import json
-
-from paddle_billing import Environment
-from paddle_billing.Operation import Operation
-from paddle_billing.Json.PayloadEncoder import PayloadEncoder
-
 from paddle_billing.Entities.Collections import Paginator, ProductCollection
 from paddle_billing.Entities.Product import Product
 
@@ -12,50 +5,21 @@ from paddle_billing.ResponseParser import ResponseParser
 
 from paddle_billing.Resources.Products.Operations import CreateProduct, ListProducts
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from paddle_billing.AsyncClient import AsyncClient
+
 
 class AsyncProductsClient:
-    def __init__(self, api_key: str, version: int = 1, env: Environment = Environment.PRODUCTION):
-        default_headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "Paddle-Version": str(version),
-        }
-
-        self.client = httpx.AsyncClient(base_url=env.base_url, headers=default_headers)
-
-    async def _make_request(
-        self,
-        method: str,
-        url: str,
-        params: dict | None = None,
-        payload: dict | Operation | None = None,
-    ):
-        try:
-            response = await self.client.request(
-                method=method,
-                url=url,
-                params=params,
-                content=json.dumps(payload, cls=PayloadEncoder) if payload is not None else None,
-            )
-            response.raise_for_status()
-
-            return response
-        except httpx.HTTPStatusError as e:
-            api_error = None
-            if e.response is not None:
-                response_parser = ResponseParser(e.response)
-                api_error = response_parser.get_error()
-
-            if api_error is not None:
-                raise api_error
-
-            raise
+    def __init__(self, client: "AsyncClient"):
+        self.client = client
 
     async def list(self, operation: ListProducts = None) -> ProductCollection:
         if operation is None:
             operation = ListProducts()
 
-        response = await self._make_request("GET", "/products", params=operation.get_parameters())
+        response = await self.client.make_request("GET", "/products", params=operation.get_parameters())
         parser = ResponseParser(response)
 
         return ProductCollection.from_list(
@@ -63,7 +27,7 @@ class AsyncProductsClient:
         )
 
     async def create(self, operation: CreateProduct) -> Product:
-        response = await self._make_request("POST", "/products", payload=operation)
+        response = await self.client.make_request("POST", "/products", payload=operation)
         parser = ResponseParser(response)
 
         return Product.from_dict(parser.get_data())
