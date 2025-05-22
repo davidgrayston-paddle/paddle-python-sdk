@@ -67,3 +67,23 @@ def test_paddle_str_enum_gracefully_handles_missing_values():
     assert TestCountryCodesEnum.France.value == "france"
     assert TestCountryCodesEnum.France.name == "Undefined"
     assert not TestCountryCodesEnum.France.is_known()
+    assert hasattr(TestCountryCodesEnum, "France") is True
+
+
+def test_paddle_str_enum_does_not_support_lowercase_attributes():
+    class TestCountryCodesEnum(PaddleStrEnum, metaclass=PaddleStrEnumMeta):
+        CA: "TestCountryCodesEnum" = "canada"
+        US: "TestCountryCodesEnum" = "usa"
+
+    # Contain uppercase letters.
+    assert hasattr(TestCountryCodesEnum, "SomeCountry") is True
+    assert hasattr(TestCountryCodesEnum, "Some Country") is True
+    assert hasattr(TestCountryCodesEnum, "Some-Country") is True
+    assert hasattr(TestCountryCodesEnum, "Some_Country") is True
+    assert hasattr(TestCountryCodesEnum, "SOMECOUNTRY") is True
+    assert hasattr(TestCountryCodesEnum, "SOME_COUNTRY") is True
+
+    # Lowercase only.
+    assert hasattr(TestCountryCodesEnum, "somecountry") is False
+    assert hasattr(TestCountryCodesEnum, "some_country") is False
+    assert hasattr(TestCountryCodesEnum, "some-country") is False
