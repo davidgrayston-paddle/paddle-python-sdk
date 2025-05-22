@@ -29,6 +29,9 @@ class PaddleStrEnumMeta(type):
         if _is_dunder(name):
             raise AttributeError(name)
 
+        if isinstance(name, str) and name.islower():
+            raise AttributeError(name)
+
         return cls(str(name).lower())
 
 
